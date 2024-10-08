@@ -1,0 +1,73 @@
+import tkinter
+from tkinter import ttk
+import cv2
+from PIL import Image, ImageTk
+import time
+
+def update_frame():
+    ret, frame = cap.read()
+    if ret:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, (1024, 768))
+        img = Image.fromarray(frame)
+        imgtk = ImageTk.PhotoImage(image=img)
+        canvas.create_image(0, 0, anchor=tkinter.NW, image=imgtk)
+        canvas.imgtk = imgtk  # 保持对图像的引用
+    root.after(10, update_frame)  # 每10毫秒调用一次自己
+
+# 确保在退出时释放摄像头
+def on_closing():
+    cap.release()
+    root.destroy()
+
+# 创建一个主界面窗体
+root = tkinter.Tk()
+root.title("主界面")
+
+# 设置窗体界面为全屏
+root.attributes('-fullscreen', True)
+
+# 在左侧创建一个按钮“退出”
+exit_button = ttk.Button(root, text="\n 退  出  \n", command=root.quit)
+exit_button.place(x=0, y=0)
+
+# 在左侧创建一个按钮“换装”
+change_button = ttk.Button(root, text="\n 换  装  \n")
+change_button.place(x=0, y=80)
+
+# 在左侧创建一个按钮“消毒”
+disinfect_button = ttk.Button(root, text="\n 消  毒  \n")
+disinfect_button.place(x=0, y=160)
+
+# 在左侧创建一个按钮“除湿”
+dehumidify_button = ttk.Button(root, text="\n 除  湿  \n")
+dehumidify_button.place(x=0, y=240)
+
+# 创建一个画布
+canvas = tkinter.Canvas(root, width=1024, height=768, bg="white")
+canvas.place(x=150, y=300)
+
+# 将摄像头画面显示在画布上
+cap = cv2.VideoCapture(0)
+
+# 开始更新画面
+update_frame()
+
+# 确保在退出时释放摄像头
+root.protocol("WM_DELETE_WINDOW", on_closing)
+
+# 创建一个标签，用于显示当前时间，设置字体大小
+time_label = ttk.Label(root, font=("Helvetica", 24))  # 字体设置为Helvetica，大小为24
+time_label.place(x=150, y=0)  # 位置可以根据需要调整
+
+# 更新时间的函数
+def update_time():
+    current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    time_label.config(text=current_time)
+    time_label.after(1000, update_time)  # 每1000毫秒（1秒）更新一次时间
+
+# 启动更新时间
+update_time()
+
+# 启动主循环
+root.mainloop()
